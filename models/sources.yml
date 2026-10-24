@@ -4,7 +4,7 @@ sources:
   - name: g_analytics4
     schema: g_analytics4
     tables:
-      - name: envent_flattened_bis
+      - name: events_ (1)
       
   - name: google_sheets
     schema: google_sheets
