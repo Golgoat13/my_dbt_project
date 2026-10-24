@@ -1,15 +1,15 @@
 version: 2
 
 sources:
-  - name: googles_analytics_4
-    schema: google_analytics_4
+  - name: g_analytics4
+    schema: g_analytics4
     tables:
-      - name: events_20210131
+      - name: envent_flattened_bis
       
   - name: google_sheets
     schema: google_sheets
     tables:
-      - name: account_manager_region_mapping
+      - name: territory_managers
 
   - name: sales_database
     schema: sales_database
@@ -17,7 +17,7 @@ sources:
       - name: feedback
       - name: payment
       - name: product
-      - name: order
-      - name: order_item
+      - name: orders
+      - name: order_items
       - name: seller
       - name: user
