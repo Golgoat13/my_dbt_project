@@ -32,7 +32,8 @@ models:
         tests:
           - accepted_values:
               name: accepted_values_order_status
-              arguments: ['created', 'shipped', 'approved', 'canceled', 'invoiced', 'delivered', 'processing', 'unavailable']
+              arguments: 
+                values: ['created', 'shipped', 'approved', 'canceled', 'invoiced', 'delivered', 'processing', 'unavailable']
       - name: user_id
         description: "Foreign key linking the order to the user who placed it."
         tests:
