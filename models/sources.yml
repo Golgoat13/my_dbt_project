@@ -4,7 +4,7 @@ sources:
   - name: g_analytics4
     schema: g_analytics4
     tables:
-      - name: events_ (1)
+      - name: events_20210131
       
   - name: google_sheets
     schema: google_sheets
