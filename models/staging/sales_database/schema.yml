@@ -14,8 +14,9 @@ models:
         tests:
           - relationships:
               name: order_id_foreign_key_in_stg_sales_database__feedback
-              to: ref('stg_sales_database__order')
-              field: order_id
+              arguments: 
+                to: ref('stg_sales_database__order')
+                field: order_id
 
 
   - name: stg_sales_database__order
@@ -31,14 +32,15 @@ models:
         tests:
           - accepted_values:
               name: accepted_values_order_status
-              values: ['created', 'shipped', 'approved', 'canceled', 'invoiced', 'delivered', 'processing', 'unavailable']
+              arguments: ['created', 'shipped', 'approved', 'canceled', 'invoiced', 'delivered', 'processing', 'unavailable']
       - name: user_id
         description: "Foreign key linking the order to the user who placed it."
         tests:
           - relationships:
               name: user_id_id_foreign_key_in_stg_sales_database__order
-              to: ref('stg_sales_database__user')
-              field: user_id
+              arguments: 
+                to: ref('stg_sales_database__user')
+                field: user_id
 
   - name: stg_sales_database__order_item
     description: "This model contains information about each item included in an order, including its price, quantity, and shipping cost."
@@ -53,8 +55,9 @@ models:
         tests:
           - relationships:
               name: order_id_id_foreign_key_in_stg_sales_database__order_item
-              to: ref('stg_sales_database__order')
-              field: order_id
+              arguments: 
+                to: ref('stg_sales_database__order')
+                field: order_id
       - name: total_order_item_amount
         description: "The total amount for this order item, calculated as (price * quantity) + shipping_cost."
 
@@ -71,8 +74,9 @@ models:
         tests:
           - relationships:
               name: order_id_id_foreign_key_in_stg_sales_database__payment
-              to: ref('stg_sales_database__order')
-              field: order_id
+              arguments: 
+                to: ref('stg_sales_database__order')
+                field: order_id
 
   - name: stg_sales_database__product
     description: "This model contains details of products available for sale, primarily focusing on information about the product's volume and size."
