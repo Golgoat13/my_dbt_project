@@ -14,4 +14,4 @@
    traffic_source.medium AS traffic_medium,
    traffic_source.source AS traffic_source,
    traffic_source.name AS traffic_name
- FROM {{ source('googles_analytics_4', 'events_20210131') }}
+ FROM {{ source('g_analytics4', 'envent_flattened_bis') }}
