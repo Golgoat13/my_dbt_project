@@ -18,7 +18,7 @@ WITH session_data AS (
 SELECT
   user_pseudo_id,
   ga_session_id,
-  CONCAT(user_pseudo_id, '-', ga_session_id) AS unique_session_id, 
+  CONCAT(user_pseudo_id, '-', ga_session_id) AS missname_unique_session_id, 
   session_start_time,
   session_end_time,
   TIMESTAMP_DIFF(session_end_time, session_start_time, SECOND) AS session_duration_seconds,
