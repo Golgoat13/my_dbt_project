@@ -1,0 +1,263 @@
+version: 2
+
+models:
+
+  # ORDERS / FULFILLMENT
+  # Grain: 1 row per order_id
+
+  - name: int_enriched_orders
+    description: "Orders enriched with customer, staff and fulfillment performance metrics."
+
+    columns:
+
+      - name: order_id
+        description: "Unique identifier for each shipped order."
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: "Identifier of the customer associated with the order."
+        tests:
+          - not_null
+
+      - name: store_id
+        description: "Identifier of the store associated with the order."
+        tests:
+          - not_null
+
+      - name: order_date
+        description: "Date when the order was placed."
+        tests:
+          - not_null
+
+      - name: required_date
+        description: "Expected shipping date of the order."
+        tests:
+          - not_null
+
+      - name: shipped_date
+        description: "Actual shipping date of the order."
+        tests:
+          - not_null
+
+      - name: leadtime
+        description: "Number of days between order date and shipping date."
+        tests:
+          - not_null
+
+      - name: ontime_flag
+        description: "Flag equal to 1 when the order was shipped on or before the required date, otherwise 0."
+        tests:
+          - not_null
+
+
+ 
+  # SALES
+  # Grain: 1 row per order_id after aggregation of order items
+
+
+  - name: int_enriched_order_items
+    description: "Sales metrics aggregated at order and product level."
+
+    columns:
+
+      - name: order_id
+        description: "Identifier of the order."
+        tests:
+          - not_null
+
+      - name: product_id
+        description: "Identifier of the product."
+        tests:
+          - not_null
+
+      - name: store_id
+        description: "Identifier of the store."
+        tests:
+          - not_null
+
+      - name: customer_id
+        description: "Identifier of the customer."
+        tests:
+          - not_null
+
+      - name: order_date
+        description: "Date when the order was placed."
+        tests:
+          - not_null
+
+      - name: quantity_sold
+        tests:
+          - not_null
+
+      - name: gross_business_volume
+        tests:
+          - not_null
+
+      - name: avg_perc_discount
+        tests:
+          - not_null
+
+      - name: discount_value
+        tests:
+          - not_null
+
+      - name: net_business_volume
+        tests:
+          - not_null
+
+  # CUSTOMERS
+  # Current grain: customer_id x store_id
+  # A customer may have purchased in several stores.
+
+
+  - name: int_enriched_customers
+    description: "Customers enriched with purchasing behavior, recency, fidelity and geographic proximity indicators."
+
+    columns:
+
+      - name: customer_id
+        description: "Identifier of the customer."
+        tests:
+          - not_null
+
+      - name: store_id
+        description: "Identifier of a store in which the customer has placed at least one order."
+        tests:
+          - not_null
+
+      - name: nb_orders
+        description: "Number of distinct orders placed by the customer."
+        tests:
+          - not_null
+
+      - name: days_last_order
+        description: "Number of days between the current date and the customer's last recorded order."
+        tests:
+          - not_null
+
+      - name: customer_fidelity
+        description: "Customer fidelity status based on number of orders: New or Regular."
+        tests:
+          - not_null
+
+      - name: locality_status
+        description: "Geographic customer status based on historical store visits: local, regional or Mexican."
+        tests:
+          - not_null
+
+
+
+  # PRODUCT CATALOG
+  # Grain: 1 row per product_id
+
+
+  - name: int_catalog
+    description: "Product catalog enriched with brand and category information."
+
+    columns:
+
+      - name: product_id
+        description: "Unique identifier for each product."
+        tests:
+          - unique
+          - not_null
+
+      - name: product_name
+        description: "Product name."
+        tests:
+          - not_null
+
+      - name: brand_name
+        description: "Brand associated with the product."
+        tests:
+          - not_null
+
+      - name: product_category
+        description: "Category associated with the product."
+        tests:
+          - not_null
+
+
+
+  # STORE / LOCATION
+  # Grain: 1 row per store_id
+
+
+  - name: int_locations
+    description: "Store reference enriched with geographic information and business persona."
+
+    columns:
+
+      - name: store_id
+        description: "Unique identifier for each store."
+        tests:
+          - unique
+          - not_null
+
+      - name: store_name
+        description: "Store name."
+        tests:
+          - not_null
+
+      - name: city
+        description: "City where the store is located."
+        tests:
+          - not_null
+
+      - name: zip_code
+        description: "ZIP code of the store."
+        tests:
+          - not_null
+
+      - name: state_code
+        description: "US state code of the store."
+        tests:
+          - not_null
+
+      - name: state_name
+        description: "Full US state name."
+        tests:
+          - not_null
+
+      - name: store_persona
+        description: "Business persona assigned to the store based on its local market positioning."
+        tests:
+          - not_null
+
+
+
+  # INVENTORY
+  # Grain: store_id x product_id
+
+
+  - name: int_inventory
+    description: "Current inventory metrics aggregated at store and product level."
+
+    columns:
+
+      - name: product_id
+        description: "Identifier of the product."
+        tests:
+          - not_null
+
+      - name: store_id
+        description: "Identifier of the store."
+        tests:
+          - not_null
+
+      - name: product_age
+        description: "Age of the product model in years based on model year."
+        tests:
+          - not_null
+
+      - name: stock_qty
+        description: "Current quantity of product available in stock."
+        tests:
+          - not_null
+
+      - name: stock_value
+        description: "Indicative stock value calculated from stock quantity multiplied by product list price."
+        tests:
+          - not_null

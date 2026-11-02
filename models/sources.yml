@@ -21,3 +21,17 @@ sources:
       - name: order_items
       - name: seller
       - name: user
+
+  - name: local_bike
+    database: ae-ds-localbike
+    schema: IMPORT_AIRBYTE
+    tables:
+      - name: raw_brands
+      - name: raw_categories
+      - name: raw_customers
+      - name: raw_orders
+      - name: raw_order_items
+      - name: raw_staffs
+      - name: raw_stocks
+      - name: raw_stores
+      - name: raw_products
