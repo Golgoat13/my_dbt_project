@@ -1,0 +1,433 @@
+version: 2
+
+models:
+
+  # ============================================================
+  # SALES PERFORMANCE
+  # Grain: order_date x product x store
+  # ============================================================
+
+  - name: mrt_fct_sales
+    description: >
+      Gold analytical mart dedicated to sales performance monitoring.
+      The model aggregates sales by order date, product and store.
+      It incorporates product, brand, category, geographic and store
+      persona attributes. It is designed to analyse sales volumes,
+      gross business volume, discounts and net business volume.
+      The grain is one row per order date, product and store.
+
+    columns:
+
+      - name: order_date
+        description: >
+          Date on which the associated customer orders were placed.
+          This field supports daily, monthly, quarterly and yearly
+          sales performance analysis.
+        tests:
+          - not_null
+
+      - name: product_name
+        description: >
+          Business name of the product sold, inherited from the
+          enriched product catalogue.
+        tests:
+          - not_null
+
+      - name: brand_name
+        description: >
+          Name of the brand associated with the sold product.
+          This field supports revenue and volume analysis by brand.
+        tests:
+          - not_null
+
+      - name: product_category
+        description: >
+          Business category associated with the sold product.
+          This field supports product mix analysis across the main
+          product families.
+        tests:
+          - not_null
+
+      - name: store_name
+        description: >
+          Name of the store in which the sale was recorded.
+          This field supports sales performance comparison between stores.
+        tests:
+          - not_null
+
+      - name: city
+        description: >
+          City in which the selling store is located.
+        tests:
+          - not_null
+
+      - name: state_name
+        description: >
+          Full name of the US state in which the selling store is located,
+          derived from the state code available in the source data.
+        tests:
+          - not_null
+
+      - name: store_persona
+        description: >
+          Business persona assigned to the store based on its local
+          market positioning. Santa Cruz is classified as Outdoor
+          Performance, Baldwin as Family & Commuter, and Rowlett as
+          Emerging Cycling Market.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "Outdoor Performance"
+                  - "Family & Commuter"
+                  - "Emerging Cycling Market"
+                  - "Other"
+
+      - name: quantity_sold
+        description: >
+          Total number of product units sold for the corresponding
+          date, product and store combination.
+        tests:
+          - not_null
+
+      - name: gross_business_volume
+        description: >
+          Gross sales amount before discounts. The metric is calculated
+          as the sum of quantity sold multiplied by product list price
+          and is rounded to two decimal places.
+        tests:
+          - not_null
+
+      - name: avg_perc_discount
+        description: >
+          Effective discount rate calculated as total discount value
+          divided by total gross business volume. The metric is weighted
+          by sales value rather than calculated as a simple average of
+          transaction-level discount rates.
+        tests:
+          - not_null
+
+      - name: discount_value
+        description: >
+          Total monetary value of discounts applied to sales for the
+          corresponding date, product and store combination.
+        tests:
+          - not_null
+
+      - name: net_business_volume
+        description: >
+          Net sales amount generated after discounts. The metric is
+          calculated as gross business volume minus discount value.
+        tests:
+          - not_null
+
+
+  # ============================================================
+  # CUSTOMER VALUE
+  # Grain: customer x store visited
+  # ============================================================
+
+  - name: mrt_fct_customers
+    description: >
+      Gold analytical mart dedicated to customer behaviour and value
+      analysis. The model combines customer identity and geographic
+      information with order frequency, purchase recency, fidelity
+      status and geographic proximity to the stores visited.
+      A customer can appear more than once when purchases have been
+      made in multiple stores. The grain is one row per customer and
+      store visited.
+
+    columns:
+
+      - name: customer_firstname_name
+        description: >
+          Customer full name constructed by concatenating the source
+          first name and last name. This field contains personally
+          identifiable information and is intended only for authorised
+          customer-level analysis.
+        tests:
+          - not_null
+
+      - name: city
+        description: >
+          City recorded in the customer profile. This value participates
+          in the determination of the customer geographic proximity status.
+
+      - name: state_name
+        description: >
+          Full name of the US state associated with the store visited
+          by the customer.
+        tests:
+          - not_null
+
+      - name: nb_orders
+        description: >
+          Total number of distinct orders placed by the customer across
+          the complete order history. The value can be repeated when a
+          customer has purchased from multiple stores.
+        tests:
+          - not_null
+
+      - name: days_last_order
+        description: >
+          Number of calendar days elapsed between the current model
+          execution date and the most recent order recorded for the customer.
+          A lower value indicates a more recent customer purchase.
+        tests:
+          - not_null
+
+      - name: customer_fidelity
+        description: >
+          Customer fidelity classification based on the total number
+          of distinct orders. New identifies customers with exactly one
+          order, while Regular identifies customers with more than one order.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "New"
+                  - "Regular"
+
+      - name: locality_status
+        description: >
+          Customer geographic proximity classification based on the
+          complete history of stores visited. Local indicates that the
+          customer has purchased in a store located in the same city.
+          Regional indicates that no local purchase was found but at least
+          one purchase occurred in the same state. Mexican is the fallback
+          classification when neither condition is satisfied.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "local"
+                  - "regional"
+                  - "Mexican"
+
+      - name: store_persona
+        description: >
+          Business persona assigned to the store visited by the customer.
+          This field supports customer behaviour comparison across the
+          different local market positioning strategies.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "Outdoor Performance"
+                  - "Family & Commuter"
+                  - "Emerging Cycling Market"
+                  - "Other"
+
+
+  # ============================================================
+  # DISTRIBUTION PERFORMANCE
+  # Grain: store
+  # ============================================================
+
+  - name: mrt_fct_distribution
+    description: >
+      Gold analytical mart dedicated to order distribution and fulfillment
+      performance. The model aggregates shipping performance by store and
+      provides the average shipping lead time and the proportion of orders
+      shipped on or before their required date. Only orders with a valid
+      shipping date are included in the upstream intermediate model.
+      The grain is one row per store.
+
+    columns:
+
+      - name: store_name
+        description: >
+          Name of the store responsible for the analysed shipped orders.
+          This field identifies the aggregation grain of the distribution mart.
+        tests:
+          - unique
+          - not_null
+
+      - name: city
+        description: >
+          City in which the store is located. This field supports geographic
+          comparison of fulfillment performance.
+        tests:
+          - not_null
+
+      - name: state_name
+        description: >
+          Full name of the US state in which the store is located.
+        tests:
+          - not_null
+
+      - name: store_persona
+        description: >
+          Business persona assigned to the store according to its local
+          market positioning. This field supports operational performance
+          comparison across different market contexts.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "Outdoor Performance"
+                  - "Family & Commuter"
+                  - "Emerging Cycling Market"
+                  - "Other"
+
+      - name: avg_leadtime
+        description: >
+          Average number of calendar days elapsed between the order date
+          and the actual shipping date for shipped orders associated with
+          the store.
+        tests:
+          - not_null
+
+      - name: ontime_percentage
+        description: >
+          Proportion of orders shipped on or before their required date.
+          The metric is stored as a decimal ratio: 1 represents 100 percent
+          on-time performance and 0.85 represents 85 percent.
+        tests:
+          - not_null
+
+
+  # ============================================================
+  # INVENTORY PERFORMANCE
+  # Grain: store x product
+  # ============================================================
+
+  - name: mrt_fct_inventory
+    description: >
+      Gold analytical mart dedicated to inventory performance and stock
+      exposure analysis. The model combines current inventory, indicative
+      inventory value, historical sales activity, product catalogue
+      attributes and store location attributes at store-product level.
+      It supports the identification of dead stock, long stock coverage,
+      slow-moving products and differences in inventory exposure across
+      stores. The grain is one row per store and product combination.
+
+    columns:
+
+      - name: item_store_id
+        description: >
+          Technical identifier of the store-product combination. The value
+          is constructed by concatenating store_id and product_id and uniquely
+          identifies each inventory position in the mart.
+        tests:
+          - unique
+          - not_null
+
+      - name: store_name
+        description: >
+          Name of the store holding the current product inventory.
+        tests:
+          - not_null
+
+      - name: city
+        description: >
+          City in which the store holding the inventory is located.
+        tests:
+          - not_null
+
+      - name: state_name
+        description: >
+          Full name of the US state in which the store holding the inventory
+          is located.
+        tests:
+          - not_null
+
+      - name: store_persona
+        description: >
+          Business persona assigned to the store. This dimension supports
+          comparison of inventory exposure between Outdoor Performance,
+          Family & Commuter and Emerging Cycling Market stores.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "Outdoor Performance"
+                  - "Family & Commuter"
+                  - "Emerging Cycling Market"
+                  - "Other"
+
+      - name: brand_name
+        description: >
+          Name of the brand associated with the stocked product. This field
+          supports inventory value and coverage analysis by brand.
+        tests:
+          - not_null
+
+      - name: product_category
+        description: >
+          Business category associated with the stocked product. This field
+          supports inventory analysis by major product family.
+        tests:
+          - not_null
+
+      - name: product_name
+        description: >
+          Business name of the product held in inventory.
+        tests:
+          - not_null
+
+      - name: product_age
+        description: >
+          Age in years of the product model, calculated as the current
+          calendar year minus the product model year. This field measures
+          model age and must not be interpreted as the physical age of
+          the units currently held in inventory.
+        tests:
+          - not_null
+
+      - name: stock_qty
+        description: >
+          Current number of product units available for the corresponding
+          store-product combination. The upstream intermediate model retains
+          only inventory positions with a positive stock quantity.
+        tests:
+          - not_null
+
+      - name: stock_value
+        description: >
+          Indicative retail value of the current inventory, calculated as
+          stock quantity multiplied by the product list price. This is not
+          an accounting inventory valuation because acquisition cost and
+          cost of goods sold are not available.
+        tests:
+          - not_null
+
+      - name: organic_sale_ratio
+        description: >
+          Ratio of net business volume to gross business volume for the
+          corresponding store-product combination. A value close to 1 means
+          that limited sales value was lost through discounts. The field is
+          null when no matching historical sales are available.
+
+      - name: inventory_turn
+        description: >
+          Indicative stock coverage in sales days, calculated as current
+          stock value divided by average daily net business volume. Despite
+          the column name, this metric behaves as a stock coverage indicator
+          rather than a conventional inventory turnover ratio. The field is
+          null when no matching daily sales value is available.
+
+      - name: stock_coverage_category
+        description: >
+          Operational classification derived from the indicative inventory
+          coverage. Dead Stock identifies inventory positions without matched
+          historical sales. The remaining categories classify coverage below
+          six months, between six months and one year, between one and three
+          years, or above three years.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "Dead Stock"
+                  - "[<6 mths]"
+                  - "[6mths-->1 yr]"
+                  - "[1 yr-->3yrs]"
+                  - "[>3yrs]"
+                  - ""
